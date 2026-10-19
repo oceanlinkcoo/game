@@ -8,7 +8,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fredoka:wght@500;600&family=IBM+Plex+Mono:wght@500;600&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fredoka:wght@500;600&family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+TC:wght@500;700&family=Press+Start+2P&display=swap">
 <style>
 /* Layout: one full-height app. A menu screen with two mode cards, then a game screen
    (HUD on top, falling field in the middle, typing bar at the bottom).
@@ -193,6 +193,15 @@ kbd { font-family: var(--font-body); font-size: .8em; font-weight: 700; padding:
 .pbtn.primary { background: var(--g-accent); color: var(--g-accent-fg); border-color: var(--g-accent); }
 [data-mode="arcade"] .pbtn { border-radius: 4px; font-family: var(--font-num); font-size: .6rem; text-transform: uppercase; padding: .9rem .7rem; }
 .sr-input { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; pointer-events: none; }
+.zh-input { flex: 1 1 220px; max-width: 340px; min-width: 0; padding: .5rem .85rem; border-radius: 12px; border: 2px solid var(--g-accent); background: var(--g-panel); color: var(--g-fg); font: 500 1.15rem 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif; }
+.zh-input::placeholder { color: var(--g-muted); }
+.zh-input:focus-visible { outline: 3px solid var(--g-accent); outline-offset: 2px; }
+[data-mode="arcade"] .zh-input { border-radius: 4px; background: #0A0817; }
+[data-lang="zh"] .bubble, [data-lang="zh"] .target:not(.idle), [data-lang="zh"] .keys-list span { font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif; }
+[data-lang="zh"] .bubble { font-size: clamp(1.3rem, 1rem + 1.2vw, 1.8rem); letter-spacing: .08em; }
+[data-lang="zh"][data-mode="arcade"] .bubble { font-size: clamp(1.2rem, .95rem + 1.1vw, 1.65rem); }
+[data-lang="zh"] .preview .bubble { font-size: 1.25rem; }
+.zh-note { margin: .9rem 0 0; max-width: 56ch; font-size: .9rem; line-height: 1.5; color: var(--muted); }
 
 @media (max-width: 520px) {
   .hud { gap: .5rem 1rem; }
@@ -208,24 +217,25 @@ kbd { font-family: var(--font-body); font-size: .8em; font-weight: 700; padding:
 <body>
 
 <div id="app">
-  <section id="menu" class="menu" aria-label="Choose a mode">
+  <section id="menu" class="menu" data-lang="en" aria-label="Choose a mode">
     <div class="menu-inner">
       <header>
         <p class="eyebrow">Typing practice</p>
         <h1>Bubble Typer</h1>
         <p class="lede">Each bubble carries a word. Type it to pop it before it reaches the bottom. The longer you last, the faster and longer the words get.</p>
         <div class="langs" role="group" aria-label="Language">
-          <button class="chip" type="button" aria-pressed="true">English</button>
-          <button class="chip" type="button" disabled title="Coming later">中文 <small>Soon</small></button>
+          <button class="chip" type="button" id="lang-en" aria-pressed="true">English</button>
+          <button class="chip" type="button" id="lang-zh" aria-pressed="false" lang="zh-Hant">中文</button>
         </div>
+        <p class="zh-note" id="zh-note" hidden>Switch your keyboard to your Chinese input method before you start. Bubbles show Traditional characters and pop when what you enter matches.</p>
       </header>
 
       <div class="modes">
         <button class="mode" type="button" id="play-calm" data-mode="calm" aria-label="Play Calm mode">
           <span class="preview" aria-hidden="true">
-            <span class="bubble" style="--c: var(--p1); left: 8%; top: 14%">cloud</span>
-            <span class="bubble" style="--c: var(--p2); left: 44%; top: 44%">lantern</span>
-            <span class="bubble" style="--c: var(--p3); left: 10%; top: 62%">river</span>
+            <span class="bubble" style="--c: var(--p1); left: 8%; top: 14%" data-en="cloud" data-zh="雲朵">cloud</span>
+            <span class="bubble" style="--c: var(--p2); left: 44%; top: 44%" data-en="lantern" data-zh="燈籠">lantern</span>
+            <span class="bubble" style="--c: var(--p3); left: 10%; top: 62%" data-en="river" data-zh="河流">river</span>
           </span>
           <span class="mode-body">
             <h2>Calm</h2>
@@ -237,9 +247,9 @@ kbd { font-family: var(--font-body); font-size: .8em; font-weight: 700; padding:
 
         <button class="mode" type="button" id="play-arcade" data-mode="arcade" aria-label="Play Arcade mode">
           <span class="preview" aria-hidden="true">
-            <span class="bubble" style="--c: var(--p1); left: 8%; top: 10%">combo</span>
-            <span class="bubble" style="--c: var(--p2); left: 46%; top: 36%">rocket</span>
-            <span class="bubble" style="--c: var(--p3); left: 12%; top: 58%">neon</span>
+            <span class="bubble" style="--c: var(--p1); left: 8%; top: 10%" data-en="combo" data-zh="連擊">combo</span>
+            <span class="bubble" style="--c: var(--p2); left: 46%; top: 36%" data-en="rocket" data-zh="火箭">rocket</span>
+            <span class="bubble" style="--c: var(--p3); left: 12%; top: 58%" data-en="neon" data-zh="閃電">neon</span>
           </span>
           <span class="mode-body">
             <h2>Arcade</h2>
@@ -259,7 +269,7 @@ kbd { font-family: var(--font-body); font-size: .8em; font-weight: 700; padding:
       <div class="stat"><span class="k">Score</span><span class="v" id="h-score">0</span></div>
       <div class="stat"><span class="k">Level</span><span class="v" id="h-level">1</span></div>
       <div class="stat only-arcade"><span class="k">Combo</span><span class="v" id="h-combo">×1</span></div>
-      <div class="stat"><span class="k">WPM</span><span class="v" id="h-wpm">–</span></div>
+      <div class="stat"><span class="k" id="k-rate">WPM</span><span class="v" id="h-wpm">–</span></div>
       <div class="stat"><span class="k">Accuracy</span><span class="v" id="h-acc">–</span></div>
       <div class="stat"><span class="k">Lives</span><span class="v lives" id="h-lives"></span></div>
       <div class="hud-actions">
@@ -275,6 +285,7 @@ kbd { font-family: var(--font-body); font-size: .8em; font-weight: 700; padding:
 
     <footer class="typebar">
       <div class="target idle" id="target"></div>
+      <input id="kbd" class="sr-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Type here to play">
       <div class="keys"><kbd>Backspace</kbd> drop target · <kbd>Esc</kbd> pause</div>
     </footer>
 
@@ -296,12 +307,12 @@ kbd { font-family: var(--font-body); font-size: .8em; font-weight: 700; padding:
           <div><dt>Score</dt><dd id="r-score">0</dd></div>
           <div><dt>Level</dt><dd id="r-level">1</dd></div>
           <div><dt>Words</dt><dd id="r-words">0</dd></div>
-          <div><dt>WPM</dt><dd id="r-wpm">–</dd></div>
+          <div><dt id="r-rate-k">WPM</dt><dd id="r-wpm">–</dd></div>
           <div><dt>Accuracy</dt><dd id="r-acc">–</dd></div>
           <div><dt>Best streak</dt><dd id="r-streak">0</dd></div>
         </dl>
         <div>
-          <h3>Keys to practice</h3>
+          <h3 id="h-practice">Keys to practice</h3>
           <div class="keys-list" id="r-keys"></div>
         </div>
         <div class="actions">
@@ -311,7 +322,6 @@ kbd { font-family: var(--font-body); font-size: .8em; font-weight: 700; padding:
       </div>
     </div>
 
-    <input id="kbd" class="sr-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Type here to play">
   </section>
 </div>
 
@@ -327,18 +337,24 @@ const store = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 };
-function loadBest(m) {
-  try { return JSON.parse(store.get('bt.best.' + m)) || { score: 0, level: 0 }; } catch (e) { return { score: 0, level: 0 }; }
+let lang = store.get('bt.lang') === 'zh' ? 'zh' : 'en';
+const bestKey = (l, m) => 'bt.best.' + (l === 'zh' ? 'zh.' : '') + m;
+function loadBest(l, m) {
+  try { const v = JSON.parse(store.get(bestKey(l, m))); return v && typeof v.score === 'number' ? v : { score: 0, level: 0 }; }
+  catch (e) { return { score: 0, level: 0 }; }
 }
-const best = { calm: loadBest('calm'), arcade: loadBest('arcade') };
+const best = {
+  en: { calm: loadBest('en', 'calm'), arcade: loadBest('en', 'arcade') },
+  zh: { calm: loadBest('zh', 'calm'), arcade: loadBest('zh', 'arcade') }
+};
 let muted = store.get('bt.muted') === '1';
 
-/* ---------- word source ----------
-   Everything the engine knows about a language is this: pick() returns an item
-   { text, answer }. text is what the bubble shows, answer is the exact key
-   sequence that pops it. For English both are the same word.
-   A Boshiamy pack will return a character as text and its Boshiamy key
-   sequence as answer, and nothing else in the game needs to change. */
+/* ---------- word sources ----------
+   A language pack returns items { text, answer }. text is what the bubble shows and
+   answer is what the player has to enter, one unit at a time.
+   English: the units are letters, read from the keyboard.
+   中文: the units are characters, read from whatever your input method commits,
+   so any IME works and it does not matter which code you use for a character. */
 const EN_WORDS = `
 sun map cup bird rain moon leaf fish wind lamp door sand tree ship cake gold snow hill boat rock farm song king bell coin desk fire glow home jump kite lake milk nest park ring road seed tide wave wolf yard zoo ice key pen sky bus hat jam owl pie box cat dog fox gem ink joy net oak pea quiz rug sea toy van web
 apple beach chair dance eagle flame grape horse light music night ocean piano queen stone table water brave clock dream field giant happy jelly knife lunch maple noble paint quick smile tiger uncle voice wheat zebra cloud river
@@ -346,41 +362,59 @@ bridge garden window planet silver forest pocket candle basket castle dragon isl
 balloon captain diamond evening fantasy giraffe harvest journey kingdom lantern morning network octopus painter quality rainbow sandwich thunder village weather blanket chimney dolphin elephant feather glacier history imagine library mystery notebook pancake quarter sailboat telegram umbrella volcano whisper birthday campfire daylight firework goldfish homework treasure mountain sunshine wildlife backpack language painting question starlight universe horizon zeppelin
 adventure butterfly chocolate discovery enchanted fireplace grapevine hurricane invention jellyfish knowledge landscape moonlight nightfall orchestra passenger quicksilver raspberry snowflake telescope waterfall wilderness blueberry celebration dandelion earthquake friendship gingerbread illusion kilometer lighthouse marketplace observatory playground strawberry vocabulary watermelon xylophone yesterday
 `.trim().split(/\s+/);
-const byLen = {};
-for (const w of EN_WORDS) (byLen[w.length] = byLen[w.length] || []).push(w);
 
-const PACKS = {
-  en: {
-    pick(minL, maxL, usedAnswers, usedFirsts, recent) {
-      let pool = [];
-      for (let l = minL; l <= maxL; l++) if (byLen[l]) pool = pool.concat(byLen[l]);
-      if (!pool.length) pool = EN_WORDS;
-      let good = pool.filter((w) => !usedAnswers.has(w) && !usedFirsts.has(w[0]) && !recent.includes(w));
-      if (!good.length) good = pool.filter((w) => !usedAnswers.has(w) && !usedFirsts.has(w[0]));
-      if (!good.length) good = pool.filter((w) => !usedAnswers.has(w));
-      if (!good.length) good = pool;
-      const w = good[(Math.random() * good.length) | 0];
-      return { text: w, answer: w };
-    }
-  }
+const ZH_WORDS = `
+人 大 小 山 水 火 木 土 日 月 天 地 心 手 口 目 耳 花 草 魚 鳥 馬 牛 羊 風 雲 雨 雪 星 光 門 窗 書 筆 紙 車 船 飛 走 跑 跳 吃 喝 看 聽 說 寫 讀 笑 哭 愛 想 學 國 家 朋 友 老 師 生 好 快 樂 美 長 高 低 多 少 新 舊 紅 黃 藍 綠 黑 白 春 夏 秋 冬 東 西 南 北 左 右 上 下 前 後 開 關 買 賣 時 間 年 電 龍 貓 狗 蛋 米 茶 湯 肉 樹 林 森 河 海 湖 石 金 銀 鐵 音 歌 畫 影 夢 冷 熱 暖 涼 夜 晨 早 晚 午 今 明 昨 過 來 去 回 玩 睡 醒
+朋友 學校 老師 學生 電腦 手機 今天 明天 昨天 早上 晚上 蘋果 香蕉 水果 咖啡 牛奶 麵包 米飯 蔬菜 天氣 下雨 太陽 月亮 星星 彩虹 森林 海洋 河流 山脈 花園 城市 鄉村 家庭 父母 兄弟 姐妹 孩子 工作 公司 醫生 護士 老闆 同事 電影 音樂 歌曲 故事 書本 筆記 問題 答案 快樂 幸福 美麗 可愛 安靜 勇敢 聰明 努力 健康 運動 旅行 飛機 火車 公車 汽車 道路 橋樑 房間 廚房 餐廳 商店 市場 夢想 時間 世界 生活 語言 文字 漢字 打字 鍵盤 螢幕 滑鼠 網路 遊戲 泡泡 氣球 燈籠 煙火 月餅 湯圓 餃子 麵條 豆漿 雞蛋 西瓜 草莓 葡萄 鳳梨 芒果 檸檬 櫻花 蝴蝶 貓咪 小狗 兔子 老虎 獅子 大象 熊貓 企鵝 海豚 鯨魚 星空 流星 晴天 雪花 微風 閃電 雷聲 海灘 沙漠 島嶼 瀑布 湖泊 火山 冰雪 溫暖 涼爽 熱鬧 平安 感謝 歡迎 再見 加油 恭喜 祝福 禮物 生日 假期 週末 春天 夏天 秋天 冬天 早餐 午餐 晚餐 點心 甜點 果汁 紅茶 綠茶 烏龍 雲朵 火箭 連擊
+圖書館 咖啡廳 電視機 冰淇淋 腳踏車 巧克力 計算機 動物園 遊樂園 運動場 洗衣機 小朋友 大學生 小學生 對不起 沒關係 謝謝你 好朋友 好天氣 火車站 公車站 捷運站 便利店 大馬路 紅綠燈 太陽花 彩虹橋 蝴蝶結 棒棒糖 手電筒 溜滑梯 遙控器 洗手間 游泳池 電冰箱 微波爐 吹風機 筆記本 鉛筆盒 大白菜 小籠包 滷肉飯 牛肉麵 蚵仔煎 臭豆腐 鳳梨酥 熱咖啡 冰紅茶
+一帆風順 心想事成 萬事如意 恭喜發財 學以致用 一心一意 三心二意 好好學習 天天向上 風和日麗 山明水秀 鳥語花香 春暖花開 日新月異 自強不息 說到做到 朝氣蓬勃 笑口常開 大吉大利 步步高升 學無止境 同心協力 全力以赴 勇往直前 事半功倍 見多識廣 心平氣和 平平安安 歡歡喜喜 開開心心 快快樂樂 風平浪靜 雲淡風輕 花好月圓 海闊天空 青山綠水 小橋流水 藍天白雲 晴空萬里 萬里無雲 珍珠奶茶
+我愛學中文 今天真開心 你吃飯了嗎 我喜歡打字 天天都快樂 祝你生日快樂 今天天氣很好 謝謝你的幫忙 慢慢來比較快 新年快樂 早安你好
+`.trim().split(/\s+/);
+
+const first = (w) => Array.from(w)[0];
+function makePick(words) {
+  const by = {};
+  for (const w of new Set(words)) { const n = Array.from(w).length; (by[n] = by[n] || []).push(w); }
+  return function pick(minL, maxL, usedAnswers, usedFirsts, recent) {
+    let pool = [];
+    for (let l = minL; l <= maxL; l++) if (by[l]) pool = pool.concat(by[l]);
+    if (!pool.length) pool = words;
+    let good = pool.filter((w) => !usedAnswers.has(w) && !usedFirsts.has(first(w)) && !recent.includes(w));
+    if (!good.length) good = pool.filter((w) => !usedAnswers.has(w) && !usedFirsts.has(first(w)));
+    if (!good.length) good = pool.filter((w) => !usedAnswers.has(w));
+    if (!good.length) good = pool;
+    const w = good[(Math.random() * good.length) | 0];
+    return { text: w, answer: w };
+  };
+}
+
+/* pace slows the whole ramp for a language (entering a character takes longer than a letter). */
+const LANGS = {
+  en: { id: 'en', unit: 'WPM', pace: 1, pick: makePick(EN_WORDS),
+        rate: (ok, min) => ok / 5 / min, range: (c, L) => [c.minLen(L), c.maxLen(L)],
+        idle: 'Type any bubble’s word to lock on', practice: 'Keys to practice' },
+  zh: { id: 'zh', unit: 'CPM', pace: 1.6, pick: makePick(ZH_WORDS),
+        rate: (ok, min) => ok / min, range: (c, L) => c.zhRange(L),
+        idle: 'Type any bubble’s characters to lock on', practice: 'Characters to practice' }
 };
-const pack = PACKS.en;
 
 /* ---------- mode tuning ----------
-   cross  = seconds a bubble takes to cross the field. It shrinks each level down to crossMin.
-   gap    = seconds between new bubbles. It shrinks each level down to gapMin. */
+   cross = seconds a bubble takes to cross the field; it shrinks each level down to crossMin.
+   gap   = seconds between new bubbles; it shrinks each level down to gapMin. */
 const MODES = {
   calm: {
     name: 'Calm', lives: 5, perLevel: 8, cross0: 16, crossDecay: .93, crossMin: 6.5,
     gap0: 2.8, gapDecay: .95, gapMin: 1.5, max: 7, sway: 14, breather: 2.2, regen: true, combo: false,
     minLen: (L) => Math.min(3 + (((L - 1) / 4) | 0), 6),
-    maxLen: (L) => Math.min(4 + (((L - 1) / 2) | 0), 9)
+    maxLen: (L) => Math.min(4 + (((L - 1) / 2) | 0), 9),
+    zhRange: (L) => [L < 5 ? 1 : L < 12 ? 2 : 3, L < 2 ? 1 : L < 5 ? 2 : L < 8 ? 3 : L < 12 ? 4 : 5]
   },
   arcade: {
     name: 'Arcade', lives: 3, perLevel: 7, cross0: 9.5, crossDecay: .9, crossMin: 2.4,
     gap0: 1.9, gapDecay: .9, gapMin: .75, max: 10, sway: 0, breather: 1.6, regen: false, combo: true,
     minLen: (L) => Math.min(3 + (((L - 1) / 3) | 0), 7),
-    maxLen: (L) => Math.min(4 + Math.floor((L - 1) * 0.7), 11)
+    maxLen: (L) => Math.min(4 + Math.floor((L - 1) * 0.7), 11),
+    zhRange: (L) => [L < 4 ? 1 : L < 9 ? 2 : 3, L < 2 ? 1 : L < 4 ? 2 : L < 7 ? 3 : L < 11 ? 4 : 5]
   }
 };
 const crossTime = (c, L) => Math.max(c.crossMin, c.cross0 * Math.pow(c.crossDecay, L - 1));
@@ -412,7 +446,7 @@ const sfx = {
 };
 
 /* ---------- state ---------- */
-let S = null, raf = 0, last = 0, fw = 0, fh = 0, floorH = 0;
+let S = null, raf = 0, last = 0, fw = 0, fh = 0, floorH = 0, composing = false, hintT = 0;
 
 function measure() {
   fw = field.clientWidth; fh = field.clientHeight; floorH = floorEl.offsetHeight;
@@ -423,16 +457,23 @@ function start(mode) {
   ensureAudio();
   cancelAnimationFrame(raf);
   field.querySelectorAll('.bubble, .dot').forEach((n) => n.remove());
-  const cfg = MODES[mode];
-  S = { mode, cfg, score: 0, level: 1, popped: 0, lives: cfg.lives, combo: 0, maxCombo: 0, bubbles: [], lock: null,
+  const cfg = MODES[mode], P = LANGS[lang];
+  S = { mode, lang, P, cfg, score: 0, level: 1, popped: 0, lives: cfg.lives, combo: 0, maxCombo: 0, bubbles: [], lock: null,
         spawnT: .35, breather: 0, t: 0, active: 0, ok: 0, bad: 0, missed: {}, recent: [], paused: false, over: false, hudT: 0 };
   game.dataset.mode = mode;
+  game.dataset.lang = lang;
+  kbd.className = lang === 'zh' ? 'zh-input' : 'sr-input';
+  kbd.lang = lang === 'zh' ? 'zh-Hant' : 'en';
+  kbd.placeholder = lang === 'zh' ? 'Type with your input method' : '';
+  $('k-rate').textContent = P.unit;
+  $('r-rate-k').textContent = P.unit;
+  $('h-practice').textContent = P.practice;
   menu.hidden = true; game.hidden = false;
   $('ov-pause').hidden = true; $('ov-over').hidden = true;
   const lv = $('h-lives'); lv.replaceChildren();
   for (let i = 0; i < cfg.lives; i++) { const s = document.createElement('span'); s.className = 'life'; lv.appendChild(s); }
   measure(); hud(); renderTarget();
-  kbd.value = ''; kbd.focus();
+  composing = false; kbd.value = ''; kbd.focus();
   last = performance.now();
   raf = requestAnimationFrame(loop);
 }
@@ -442,21 +483,31 @@ function showMenu() {
   if (S) S.over = true;
   game.hidden = true; menu.hidden = false;
   refreshMenu();
-  const m = S && S.mode === 'arcade' ? 'play-arcade' : 'play-calm';
-  $(m).focus();
+  $(S && S.mode === 'arcade' ? 'play-arcade' : 'play-calm').focus();
 }
 
 function refreshMenu() {
   for (const m of ['calm', 'arcade']) {
-    const b = best[m];
+    const b = best[lang][m];
     $('best-' + m).textContent = b.score ? `Best ${b.score.toLocaleString()} · level ${b.level}` : 'No score yet';
   }
+}
+
+function setLang(l) {
+  lang = l; store.set('bt.lang', l);
+  menu.dataset.lang = l;
+  $('lang-en').setAttribute('aria-pressed', String(l === 'en'));
+  $('lang-zh').setAttribute('aria-pressed', String(l === 'zh'));
+  $('zh-note').hidden = l !== 'zh';
+  document.querySelectorAll('.preview .bubble').forEach((el) => { el.textContent = el.dataset[l]; el.lang = l === 'zh' ? 'zh-Hant' : 'en'; });
+  refreshMenu();
 }
 
 /* ---------- bubbles ---------- */
 function buildBubble(item) {
   const el = document.createElement('div');
   el.className = 'bubble';
+  if (S.lang === 'zh') el.lang = 'zh-Hant';
   el.style.setProperty('--c', `var(--p${1 + ((Math.random() * 4) | 0)})`);
   const main = document.createElement('span');
   main.className = 'main';
@@ -476,8 +527,9 @@ function buildBubble(item) {
 function spawn() {
   const c = S.cfg, L = S.level;
   const used = new Set(S.bubbles.map((b) => b.answer));
-  const firsts = new Set(S.bubbles.map((b) => b.answer[0]));
-  const item = pack.pick(c.minLen(L), c.maxLen(L), used, firsts, S.recent);
+  const firsts = new Set(S.bubbles.map((b) => b.ans[0]));
+  const [minL, maxL] = S.P.range(c, L);
+  const item = S.P.pick(minL, maxL, used, firsts, S.recent);
   S.recent.push(item.answer); if (S.recent.length > 14) S.recent.shift();
   const { el, cs } = buildBubble(item);
   field.appendChild(el);
@@ -490,7 +542,7 @@ function spawn() {
     for (const o of S.bubbles) if (o.y < h * 3) d = Math.min(d, Math.abs(o.x - x));
     if (d > bestScore) { bestScore = d; bestX = x; }
   }
-  const b = { el, cs, item, answer: item.answer, w, h, x: bestX, y: -h, v: .88 + Math.random() * .26,
+  const b = { el, cs, item, answer: item.answer, ans: Array.from(item.answer), w, h, x: bestX, y: -h, v: .88 + Math.random() * .26,
               ph: Math.random() * 6.28, f: .5 + Math.random() * .5, prog: 0, warn: false, cx: 0 };
   S.bubbles.push(b);
   place(b);
@@ -513,7 +565,7 @@ function loop(now) {
   const dt = Math.min(.05, (now - last) / 1000);
   last = now;
   if (!S || S.paused || S.over) return;
-  const c = S.cfg;
+  const c = S.cfg, pace = S.P.pace;
   S.t += dt; S.active += dt;
 
   if (S.breather > 0) {
@@ -521,11 +573,11 @@ function loop(now) {
     if (S.breather <= 0) S.spawnT = .4;
   } else {
     S.spawnT -= dt;
-    if (S.spawnT <= 0 && S.bubbles.length < c.max) { spawn(); S.spawnT = spawnGap(c, S.level) * (.85 + Math.random() * .3); }
+    if (S.spawnT <= 0 && S.bubbles.length < c.max) { spawn(); S.spawnT = spawnGap(c, S.level) * pace * (.85 + Math.random() * .3); }
   }
 
   const travel = fh - floorH;
-  const speed = (travel + 40) / crossTime(c, S.level);
+  const speed = (travel + 40) / (crossTime(c, S.level) * pace);
   for (let i = S.bubbles.length - 1; i >= 0; i--) {
     const b = S.bubbles[i];
     b.y += speed * b.v * dt;
@@ -568,25 +620,35 @@ function dropLock() {
   S.lock = null; renderTarget();
 }
 
+/* One unit of input: a letter in English, a committed character in 中文. */
 function handleKey(raw) {
-  if (raw.length !== 1 || raw === ' ') return;
+  if (/\s/.test(raw)) return;
   const key = raw.toLowerCase();
+  if (S.lang === 'zh' && /^[\x21-\x7e]$/.test(key)) { hintIme(); return; }
   if (!S.lock) {
     let cand = null;
-    for (const b of S.bubbles) if (b.answer[0] === key && (!cand || b.y > cand.y)) cand = b;
+    for (const b of S.bubbles) if (b.ans[0] === key && (!cand || b.y > cand.y)) cand = b;
     if (!cand) { S.bad++; flashTarget(); sfx.wrong(); return; }
     setLock(cand);
   }
-  const b = S.lock, expected = b.answer[b.prog];
+  const b = S.lock, expected = b.ans[b.prog];
   if (key === expected) {
     S.ok++; b.prog++; paint(b); renderTarget(); sfx.key(b.prog);
-    if (b.prog >= b.answer.length) popBubble(b);
+    if (b.prog >= b.ans.length) popBubble(b);
   } else {
     S.bad++; S.missed[expected] = (S.missed[expected] || 0) + 1;
     if (S.cfg.combo) { S.combo = 0; hud(); }
     flashTarget(); sfx.wrong();
     if (!reduceMotion) b.el.animate([{ translate: '0 0' }, { translate: '-5px 0' }, { translate: '5px 0' }, { translate: '0 0' }], { duration: 160 });
   }
+}
+
+function hintIme() {
+  const t = $('target');
+  t.classList.add('idle');
+  t.textContent = 'Switch to your Chinese input method, then type again.';
+  clearTimeout(hintT);
+  hintT = setTimeout(() => { if (S && !S.over) renderTarget(); }, 2400);
 }
 
 function flashTarget() {
@@ -600,7 +662,7 @@ function popBubble(b) {
   S.lock = null; renderTarget();
   S.combo++; S.maxCombo = Math.max(S.maxCombo, S.combo);
   const mult = c.combo ? 1 + Math.min(S.combo - 1, 40) / 10 : 1;
-  S.score += Math.round(b.answer.length * 10 * mult);
+  S.score += Math.round(b.ans.length * 10 * mult);
   S.popped++;
   sfx.pop(c.combo, S.combo);
   burst(b);
@@ -639,22 +701,25 @@ function levelUp() {
 function renderTarget() {
   const t = $('target');
   t.replaceChildren();
-  if (!S || !S.lock) { t.classList.add('idle'); t.textContent = 'Type any bubble’s word to lock on'; return; }
+  if (!S || !S.lock) { t.classList.add('idle'); t.textContent = S ? S.P.idle : LANGS[lang].idle; return; }
   t.classList.remove('idle');
   const b = S.lock;
   if (b.item.text !== b.answer) { const m = document.createElement('span'); m.className = 'tmain'; m.textContent = b.item.text; t.appendChild(m); }
   const w = document.createElement('span');
-  b.answer.split('').forEach((ch, i) => { const s = document.createElement('span'); s.className = 'ch' + (i < b.prog ? ' done' : ''); s.textContent = ch; w.appendChild(s); });
+  b.ans.forEach((ch, i) => { const s = document.createElement('span'); s.className = 'ch' + (i < b.prog ? ' done' : ''); s.textContent = ch; w.appendChild(s); });
   t.appendChild(w);
 }
 
 /* ---------- HUD ---------- */
+function rateText() {
+  return S.active > 4 && S.ok ? Math.round(S.P.rate(S.ok, S.active / 60)) : '–';
+}
 function hud() {
   if (!S) return;
   $('h-score').textContent = S.score.toLocaleString();
   $('h-level').textContent = S.level;
   $('h-combo').textContent = '×' + (1 + Math.min(Math.max(S.combo - 1, 0), 40) / 10).toFixed(1).replace(/\.0$/, '');
-  $('h-wpm').textContent = S.active > 4 && S.ok ? Math.round(S.ok / 5 / (S.active / 60)) : '–';
+  $('h-wpm').textContent = rateText();
   const tot = S.ok + S.bad;
   $('h-acc').textContent = tot ? Math.round((S.ok / tot) * 100) + '%' : '–';
   const lives = $('h-lives').children;
@@ -671,21 +736,21 @@ function togglePause() {
 
 function endGame() {
   S.over = true;
-  const m = S.mode, prev = best[m];
+  const m = S.mode, prev = best[S.lang][m];
   const isBest = S.score > prev.score;
-  if (isBest) { best[m] = { score: S.score, level: S.level }; store.set('bt.best.' + m, JSON.stringify(best[m])); }
+  if (isBest) { best[S.lang][m] = { score: S.score, level: S.level }; store.set(bestKey(S.lang, m), JSON.stringify(best[S.lang][m])); }
   $('over-new').hidden = !isBest;
   $('over-title').textContent = m === 'arcade' ? 'GAME OVER' : 'Session over';
   $('r-score').textContent = S.score.toLocaleString();
   $('r-level').textContent = S.level;
   $('r-words').textContent = S.popped;
-  $('r-wpm').textContent = S.active > 4 && S.ok ? Math.round(S.ok / 5 / (S.active / 60)) : '–';
+  $('r-wpm').textContent = rateText();
   const tot = S.ok + S.bad;
   $('r-acc').textContent = tot ? Math.round((S.ok / tot) * 100) + '%' : '–';
   $('r-streak').textContent = S.maxCombo;
   const kl = $('r-keys'); kl.replaceChildren();
   const top = Object.entries(S.missed).sort((a, b) => b[1] - a[1]).slice(0, 4);
-  if (!top.length) { const n = document.createElement('span'); n.className = 'none'; n.textContent = 'No missed keys this run.'; kl.appendChild(n); }
+  if (!top.length) { const n = document.createElement('span'); n.className = 'none'; n.textContent = S.lang === 'zh' ? 'No missed characters this run.' : 'No missed keys this run.'; kl.appendChild(n); }
   for (const [k, n] of top) {
     const s = document.createElement('span'); s.textContent = k;
     const e = document.createElement('em'); e.textContent = '×' + n; s.appendChild(e); kl.appendChild(s);
@@ -697,6 +762,8 @@ function endGame() {
 /* ---------- wiring ---------- */
 $('play-calm').addEventListener('click', () => start('calm'));
 $('play-arcade').addEventListener('click', () => start('arcade'));
+$('lang-en').addEventListener('click', () => setLang('en'));
+$('lang-zh').addEventListener('click', () => setLang('zh'));
 $('b-again').addEventListener('click', () => start(S.mode));
 $('b-menu').addEventListener('click', showMenu);
 $('b-quit').addEventListener('click', showMenu);
@@ -712,26 +779,35 @@ function syncSound() {
 syncSound();
 
 field.addEventListener('pointerdown', () => { if (S && !S.paused && !S.over) kbd.focus(); });
-kbd.addEventListener('input', (e) => {
-  if (e.isComposing) return;
+
+/* Input. English reads each character as it arrives. 中文 waits until the input
+   method commits text (compositionend), then reads each committed character. */
+function flush() {
   const v = kbd.value; kbd.value = '';
-  if (!S || S.over || S.paused) return;
+  if (!v || !S || S.over || S.paused) return;
   for (const ch of v) handleKey(ch);
+}
+kbd.addEventListener('compositionstart', () => { composing = true; });
+kbd.addEventListener('compositionend', () => { composing = false; setTimeout(flush, 0); });
+kbd.addEventListener('input', () => {
+  if (S && S.lang === 'zh') { if (!composing) setTimeout(flush, 0); }
+  else flush();
 });
 kbd.addEventListener('keydown', (e) => {
-  if (e.key === 'Backspace') { e.preventDefault(); dropLock(); }
+  if (e.isComposing || composing || e.keyCode === 229) return;
+  if (e.key === 'Backspace') { if (kbd.value) return; e.preventDefault(); dropLock(); }
   else if (e.key === 'Tab') e.preventDefault();
 });
 document.addEventListener('keydown', (e) => {
   if (!game.hidden) {
-    if (e.key === 'Escape') { e.preventDefault(); togglePause(); }
+    if (e.key === 'Escape' && !e.isComposing && !composing) { e.preventDefault(); togglePause(); }
   } else if (!e.metaKey && !e.ctrlKey && !e.altKey) {
     if (e.key === '1') start('calm'); else if (e.key === '2') start('arcade');
   }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && S && !S.over && !S.paused && !game.hidden) togglePause(); });
 
-refreshMenu();
+setLang(lang);
 })();
 </script>
 
